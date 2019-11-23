@@ -224,22 +224,13 @@ public class GooglePlayAPI {
      * using <code>generateToken()</code> or from returned
      * {@link AndroidCheckinResponse} instance.
      */
-    public String generateGsfId(String email, String ac2dmToken) throws IOException {
+    public String generateGsfId() throws IOException {
         // this first checkin is for generating gsf id
         AndroidCheckinRequest request = this.deviceInfoProvider.generateAndroidCheckinRequest();
-        AndroidCheckinResponse checkinResponse1 = checkin(request.toByteArray());
-        String securityToken = BigInteger.valueOf(checkinResponse1.getSecurityToken()).toString(16);
+        AndroidCheckinResponse checkinResponse = checkin(request.toByteArray());
 
-        // this is the second checkin to match credentials with gsf id
-        AndroidCheckinRequest.Builder checkInbuilder = AndroidCheckinRequest.newBuilder(request);
-        String gsfId = BigInteger.valueOf(checkinResponse1.getAndroidId()).toString(16);
-        AndroidCheckinRequest build = checkInbuilder
-                .setId(new BigInteger(gsfId, 16).longValue())
-                .setSecurityToken(new BigInteger(securityToken, 16).longValue())
-                .addAccountCookie("[" + email + "]")
-                .addAccountCookie(ac2dmToken)
-                .build();
-        deviceCheckinConsistencyToken = checkin(build.toByteArray()).getDeviceCheckinConsistencyToken();
+        String gsfId = BigInteger.valueOf(checkinResponse.getAndroidId()).toString(16);
+        deviceCheckinConsistencyToken = checkinResponse.getDeviceCheckinConsistencyToken();
 
         return gsfId;
     }
@@ -843,7 +834,7 @@ public class GooglePlayAPI {
     private Map<String, String> getDefaultHeaders() {
         Map<String, String> headers = new HashMap<String, String>();
         if (this.token != null && this.token.length() > 0) {
-            headers.put("Authorization", "GoogleLogin auth=" + this.token);
+            headers.put("Authorization", "Bearer " + this.token);
         }
         headers.put("User-Agent", this.deviceInfoProvider.getUserAgentString());
         if (this.gsfId != null && this.gsfId.length() > 0) {
