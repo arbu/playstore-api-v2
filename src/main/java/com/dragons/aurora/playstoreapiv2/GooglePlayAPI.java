@@ -272,14 +272,14 @@ public class GooglePlayAPI {
      * authentication token. This token can be used to login instead of using
      * email and password every time.
      */
-    public String generateToken(String email, String ac2dmToken) throws IOException {
+    public String generateToken(String email, String aasToken) throws IOException {
         Map<String, String> params = getDefaultLoginParams(email);
         params.put("service", "oauth2:https://www.googleapis.com/auth/googleplay");
         params.put("app", "com.android.vending");
         params.put("oauth2_foreground", "1");
         params.put("token_request_options", "CAA4AVAB");
         params.put("check_email", "1");
-        params.put("Token", ac2dmToken);
+        params.put("Token", aasToken);
         params.put("client_sig", "38918a453d07199354f8b19af05ec6562ced5788");
         params.put("callerPkg", "com.google.android.gms");
         params.put("system_partition", "1");
@@ -299,12 +299,7 @@ public class GooglePlayAPI {
         }
     }
 
-    /**
-     * Logins AC2DM server and returns authentication string.
-     * This is used to link a device to an account.
-     *
-     */
-    public String generateAC2DMToken(String email, String oauthToken) throws IOException {
+    public String generateAASToken(String email, String oauthToken) throws IOException {
         Map<String, String> params = getDefaultLoginParams(email);
         params.put("service", "ac2dm");
         params.put("add_account", "1");
@@ -323,7 +318,7 @@ public class GooglePlayAPI {
         if (response.containsKey("Token")) {
             return response.get("Token");
         } else {
-            throw new AuthException("Authentication failed! (loginAC2DM)");
+            throw new AuthException("Authentication failed! (login aas)");
         }
     }
 
@@ -333,7 +328,7 @@ public class GooglePlayAPI {
         params.put("sender", sender);
         params.put("device", new BigInteger(this.gsfId, 16).toString());
         Map<String, String> headers = getDefaultHeaders();
-        headers.put("Authorization", "GoogleLogin auth=" + generateAC2DMToken(email, oauthToken));
+        headers.put("Authorization", "GoogleLogin auth=" + generateAASToken(email, oauthToken));
         byte[] responseBytes = client.post(C2DM_REGISTER_URL, params, headers);
         return parseResponse(new String(responseBytes));
     }
